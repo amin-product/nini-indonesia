@@ -30,6 +30,7 @@ window.TRIP_DATA = {
         "东爪哇"
       ],
       "areaLabel": "在东爪哇",
+      "weatherLocation": { "displayName": "Bromo", "latitude": -7.9425, "longitude": 112.9530 },
       "isLastDay": false,
       "items": [
         {
@@ -270,6 +271,7 @@ window.TRIP_DATA = {
         "东爪哇"
       ],
       "areaLabel": "在东爪哇",
+      "weatherLocation": { "displayName": "Bromo", "latitude": -7.9425, "longitude": 112.9530 },
       "isLastDay": false,
       "items": [
         {
@@ -384,6 +386,7 @@ window.TRIP_DATA = {
         "东爪哇"
       ],
       "areaLabel": "在东爪哇",
+      "weatherLocation": { "displayName": "赛武瀑布", "latitude": -8.2318, "longitude": 112.9169 },
       "isLastDay": false,
       "items": [
         {
@@ -502,6 +505,7 @@ window.TRIP_DATA = {
         "巴厘"
       ],
       "areaLabel": "在 Bali",
+      "weatherLocation": { "displayName": "沙努尔", "latitude": -8.6883, "longitude": 115.2633 },
       "isLastDay": false,
       "items": [
         {
@@ -708,6 +712,7 @@ window.TRIP_DATA = {
         "巴厘"
       ],
       "areaLabel": "在 Bali",
+      "weatherLocation": { "displayName": "佩尼达岛", "latitude": -8.7278, "longitude": 115.5444 },
       "isLastDay": false,
       "items": [
         {
@@ -775,6 +780,7 @@ window.TRIP_DATA = {
         "科莫多/弗洛勒斯"
       ],
       "areaLabel": "在科莫多 / 弗洛勒斯",
+      "weatherLocation": { "displayName": "纳闽巴霍", "latitude": -8.4964, "longitude": 119.8877 },
       "isLastDay": false,
       "items": [
         {
@@ -933,6 +939,7 @@ window.TRIP_DATA = {
         "科莫多/弗洛勒斯"
       ],
       "areaLabel": "在科莫多 / 弗洛勒斯",
+      "weatherLocation": { "displayName": "科莫多", "latitude": -8.6500, "longitude": 119.5500 },
       "isLastDay": false,
       "items": [
         {
@@ -996,6 +1003,7 @@ window.TRIP_DATA = {
         "巴厘"
       ],
       "areaLabel": "在 Bali",
+      "weatherLocation": { "displayName": "乌布", "latitude": -8.5069, "longitude": 115.2625 },
       "isLastDay": false,
       "items": [
         {
@@ -1158,6 +1166,7 @@ window.TRIP_DATA = {
         "巴厘"
       ],
       "areaLabel": "在 Bali",
+      "weatherLocation": { "displayName": "乌布", "latitude": -8.5069, "longitude": 115.2625 },
       "isLastDay": false,
       "items": [
         {
@@ -1249,6 +1258,7 @@ window.TRIP_DATA = {
         "东爪哇"
       ],
       "areaLabel": "在 Bali",
+      "weatherLocation": { "displayName": "泗水", "latitude": -7.2575, "longitude": 112.7521 },
       "isLastDay": false,
       "items": [
         {
@@ -1401,6 +1411,7 @@ window.TRIP_DATA = {
         "东爪哇"
       ],
       "areaLabel": "在东爪哇",
+      "weatherLocation": { "displayName": "泗水", "latitude": -7.2575, "longitude": 112.7521 },
       "isLastDay": true,
       "items": [
         {

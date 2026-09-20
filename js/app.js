@@ -35,6 +35,14 @@
     updating: false,
   };
 
+  const WEATHER_STORAGE_KEY = 'chidaoxiaoni_weather_cache';
+  const WEATHER_CACHE_TTL = 12 * 60 * 60 * 1000; // 12 小时
+  const weatherState = {
+    updatedAt: 0,
+    locations: {}, // key: "lat,lon" -> { "YYYY-MM-DD": { weatherCode, tempMin, tempMax, pop, precip, heavyRain } }
+    updating: false,
+  };
+
   function mapsSearchUrl(name, address) {
     const q = [name, address].filter(Boolean).join(' ').trim();
     return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`;
@@ -139,10 +147,190 @@
   }
 
   // ---------------------------------------------------------------------------
+  // 每日天气模块 (Open-Meteo API)
+  // ---------------------------------------------------------------------------
+  function locKey(loc) {
+    if (!loc || typeof loc.latitude !== 'number' || typeof loc.longitude !== 'number') return '';
+    return `${loc.latitude.toFixed(4)},${loc.longitude.toFixed(4)}`;
+  }
+
+  function weatherCodeToEmoji(code) {
+    if (code === 0) return '☀️';
+    if (code === 1 || code === 2) return '⛅';
+    if (code === 3) return '☁️';
+    if (code === 45 || code === 48) return '🌫️';
+    if ([51, 53, 55, 61, 80].includes(code)) return '🌦️';
+    if ([63, 65, 81, 82].includes(code)) return '🌧️';
+    if ([95, 96, 99].includes(code)) return '⛈️';
+    return '🌦️';
+  }
+
+  function isHeavyRainRisk(weatherCode, pop, precip) {
+    // 1. 强对流/暴雨天气且降水概率>=60%
+    if ([65, 82, 95, 96, 99].includes(weatherCode) && pop >= 60) return true;
+    // 2. 降雨概率>=70% 且累计降雨量>=15mm
+    if (pop >= 70 && precip >= 15) return true;
+    // 3. 极端累计降雨量>=25mm
+    if (precip >= 25) return true;
+    return false;
+  }
+
+  function initWeatherState() {
+    try {
+      const raw = localStorage.getItem(WEATHER_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed.updatedAt === 'number' && parsed.locations) {
+          weatherState.updatedAt = parsed.updatedAt;
+          weatherState.locations = parsed.locations;
+        }
+      }
+    } catch (e) {}
+  }
+
+  async function checkWeatherUpdate(force = false) {
+    if (!navigator.onLine) {
+      if (state.tab === 'trip') renderTrip();
+      return;
+    }
+    const now = Date.now();
+    if (!force && weatherState.updatedAt && (now - weatherState.updatedAt < WEATHER_CACHE_TTL)) {
+      return;
+    }
+    await fetchBatchWeather();
+  }
+
+  async function fetchBatchWeather() {
+    if (weatherState.updating) return;
+
+    const uniqueLocs = [];
+    const seen = new Set();
+    for (const d of days) {
+      const loc = d.weatherLocation;
+      const k = locKey(loc);
+      if (k && !seen.has(k)) {
+        seen.add(k);
+        uniqueLocs.push({ key: k, lat: loc.latitude, lon: loc.longitude, name: loc.displayName });
+      }
+    }
+    if (!uniqueLocs.length) return;
+
+    weatherState.updating = true;
+    try {
+      const lats = uniqueLocs.map(l => l.lat).join(',');
+      const lons = uniqueLocs.map(l => l.lon).join(',');
+      const url = `https://api.open-meteo.com/v1/forecast?latitude=${lats}&longitude=${lons}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,precipitation_sum&timezone=auto&forecast_days=16`;
+
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 8000);
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timer);
+
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : [data];
+      if (list.length !== uniqueLocs.length) {
+        throw new Error('Mismatched locations response');
+      }
+
+      const newLocations = {};
+      for (let i = 0; i < uniqueLocs.length; i++) {
+        const k = uniqueLocs[i].key;
+        const item = list[i];
+        const daily = item && item.daily;
+        if (!daily || !Array.isArray(daily.time)) continue;
+
+        const dayMap = {};
+        for (let j = 0; j < daily.time.length; j++) {
+          const dateStr = daily.time[j];
+          const code = daily.weather_code ? daily.weather_code[j] : 0;
+          const tMax = daily.temperature_2m_max ? daily.temperature_2m_max[j] : 0;
+          const tMin = daily.temperature_2m_min ? daily.temperature_2m_min[j] : 0;
+          const pop = daily.precipitation_probability_max ? daily.precipitation_probability_max[j] : 0;
+          const precip = daily.precipitation_sum ? daily.precipitation_sum[j] : 0;
+
+          dayMap[dateStr] = {
+            weatherCode: code,
+            tempMin: Math.round(tMin),
+            tempMax: Math.round(tMax),
+            pop: Math.round(pop),
+            precip: precip,
+            heavyRain: isHeavyRainRisk(code, pop, precip),
+          };
+        }
+        newLocations[k] = dayMap;
+      }
+
+      weatherState.updatedAt = Date.now();
+      weatherState.locations = newLocations;
+
+      try {
+        localStorage.setItem(WEATHER_STORAGE_KEY, JSON.stringify({
+          updatedAt: weatherState.updatedAt,
+          locations: weatherState.locations,
+        }));
+      } catch (e) {}
+
+      if (state.tab === 'trip') {
+        renderTrip();
+      }
+    } catch (err) {
+      console.warn('[Weather] 获取天气失败，已静默降级:', err);
+    } finally {
+      weatherState.updating = false;
+    }
+  }
+
+  function renderWeatherBar(day) {
+    if (!navigator.onLine) {
+      return '';
+    }
+    const now = Date.now();
+    if (!weatherState.updatedAt || (now - weatherState.updatedAt >= WEATHER_CACHE_TTL)) {
+      return '';
+    }
+    const loc = day.weatherLocation;
+    const k = locKey(loc);
+    if (!k) return '';
+
+    const locData = weatherState.locations && weatherState.locations[k];
+    const info = locData && locData[day.date];
+    if (!info) return '';
+
+    const icon = weatherCodeToEmoji(info.weatherCode);
+    const rainProb = typeof info.pop === 'number' ? info.pop : 0;
+    const riskLine = info.heavyRain ? '<div class="weather-risk">⚠️ 强降雨风险</div>' : '';
+
+    return `
+      <div class="day-weather">
+        <div class="weather-main">
+          <span class="weather-icon">${icon}</span>
+          <span class="weather-loc">${esc(loc.displayName || '')}</span>
+          <span class="weather-temp">${info.tempMin}° / ${info.tempMax}°</span>
+          <span class="weather-rain">降雨 ${rainProb}%</span>
+        </div>
+        ${riskLine}
+      </div>
+    `;
+  }
+
+  function bindOnlineStatus() {
+    window.addEventListener('online', () => {
+      checkWeatherUpdate();
+    });
+    window.addEventListener('offline', () => {
+      if (state.tab === 'trip') {
+        renderTrip();
+      }
+    });
+  }
+
+  // ---------------------------------------------------------------------------
   // 初始化
   // ---------------------------------------------------------------------------
   function init() {
     initRateState();
+    initWeatherState();
 
     // 真实今天（系统日期）与行程日期范围的关系，只在这里判断一次
     state.realTodayIndex = computeRealTodayIndex();
@@ -160,11 +348,13 @@
     bindSheet();
     bindLightbox();
     bindToolHistory();
+    bindOnlineStatus();
     renderDateStrip();
     renderAllTabs();
     switchTab('trip', false);
 
     checkAutoRateUpdate();
+    checkWeatherUpdate();
   }
 
   /** 把 'YYYY-MM-DD' 解析为本地时区当天 00:00 的时间戳，避免 UTC 解析偏移 */
@@ -309,6 +499,7 @@
         <h1 class="day-title">${esc(day.title)}</h1>
         <p class="day-route">${esc(day.route)}</p>
         <div class="day-tags">${day.areas.map(a => `<span class="tag">${esc(a)}</span>`).join('')}</div>
+        ${renderWeatherBar(day)}
       </header>
       ${renderFlights(day)}
       ${renderTimeline(day)}
