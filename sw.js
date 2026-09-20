@@ -7,7 +7,7 @@
   4. 外部 API 请求（汇率等）：透传放行，不污染静态缓存
 */
 
-const CACHE_NAME = 'chidaoxiaoni-v1.0';
+const CACHE_NAME = 'chidaoxiaoni-v1.1';
 
 const PRECACHE_URLS = [
   './',
@@ -16,6 +16,7 @@ const PRECACHE_URLS = [
   './js/data.js',
   './js/app.js',
   './manifest.json',
+  './欢迎页图.png',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
   './assets/icons/apple-touch-icon.png',

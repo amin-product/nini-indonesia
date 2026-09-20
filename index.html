@@ -12,8 +12,83 @@
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="css/app.css">
+  <style>
+    /* 启动欢迎页（Splash Screen）：首帧直出，防白屏与闪烁 */
+    .splash-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      inset: 0;
+      width: 100%;
+      height: 100vh;
+      height: 100dvh;
+      background-color: #FFFDF5;
+      z-index: 99999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+      box-sizing: border-box;
+      transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+      pointer-events: auto;
+    }
+    .splash-screen.fade-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .splash-img {
+      width: 72vw;
+      max-width: 340px;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+    @media (min-width: 600px) {
+      .splash-img {
+        width: 360px;
+        max-width: 360px;
+      }
+    }
+  </style>
 </head>
 <body>
+  <!-- 启动欢迎页 -->
+  <div id="splash-screen" class="splash-screen" aria-hidden="true">
+    <img class="splash-img" src="欢迎页图.png" alt="赤道小尼">
+  </div>
+  <script>
+    // 欢迎页：保持约 1 秒后轻微自然淡出并彻底移除
+    (function () {
+      const splash = document.getElementById('splash-screen');
+      if (!splash) return;
+      const minDisplayTime = 1000;
+      const startTime = Date.now();
+
+      function dismissSplash() {
+        const elapsed = Date.now() - startTime;
+        const remaining = Math.max(0, minDisplayTime - elapsed);
+        setTimeout(() => {
+          splash.classList.add('fade-out');
+          setTimeout(() => {
+            try { splash.remove(); } catch (e) { splash.style.display = 'none'; }
+          }, 350);
+        }, remaining);
+      }
+
+      if (document.readyState === 'complete') {
+        dismissSplash();
+      } else {
+        window.addEventListener('load', dismissSplash, { once: true });
+        setTimeout(dismissSplash, 2500);
+      }
+    })();
+  </script>
+
   <div id="app" class="app">
     <!-- 顶部日期条 -->
     <header class="app-header" id="date-strip">
