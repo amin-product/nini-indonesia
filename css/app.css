@@ -194,6 +194,49 @@ body.hide-header .app-main { padding-top: 16px; }
   color: var(--primary);
 }
 
+/* ---------- 每日天气条 ---------- */
+.day-weather {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.weather-main {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.4;
+}
+.weather-icon {
+  font-size: 15px;
+  line-height: 1;
+}
+.weather-loc {
+  font-weight: 600;
+  color: var(--text);
+}
+.weather-temp {
+  color: var(--text);
+}
+.weather-rain {
+  color: var(--text-weak);
+  font-size: 12px;
+}
+.weather-risk {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #b45309;
+  background: #fef3c7;
+  padding: 2px 8px;
+  border-radius: 4px;
+  width: fit-content;
+}
+
 /* ---------- 航班卡 ---------- */
 .flight-card {
   border-left: 4px solid var(--primary);
