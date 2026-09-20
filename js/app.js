@@ -675,7 +675,7 @@
   function renderDayImages(day) {
     if (!day.images.length) return '';
     const imgs = day.images.map(src => `<img class="day-ref-thumb" src="${esc(src)}" alt="路线参考图" loading="lazy">`).join('');
-    return `<div class="card"><div class="section-title">🗺️ 路线参考图（来自 Excel）</div>
+    return `<div class="card"><div class="section-title">🗺️ 路线参考图</div>
             <div class="day-ref-strip">${imgs}</div></div>`;
   }
 
@@ -840,9 +840,7 @@
         </div>
       </div>
       <div class="food-grid" id="food-grid"></div>
-      <p class="food-hint" style="margin:14px 0 80px;padding:0 4px">
-        补充内容（地区归属 / 简介 / 食材）由 AI 依据食物名及网络资料整理，非 Excel 原文。
-      </p>
+      <div style="height:20px"></div>
     `;
     document.getElementById('food-search').addEventListener('input', e => {
       state.foodSearch = e.target.value.trim();
@@ -997,7 +995,6 @@
           <h4>主要食材 / 特点</h4>
           <p>${esc(food.ingredients)}</p>
         </div>
-        <div class="ai-note">以上地区归属、简介、食材为自动补充，非 Excel 原文。</div>
         <button class="btn-staff" id="btn-staff">给店员看</button>
       `;
       document.getElementById('btn-staff').addEventListener('click', () => openStaffMode(food));
@@ -1043,7 +1040,7 @@
     } else if (rateState.source === 'cached') {
       badgeHtml = `<span class="rate-badge rate-badge-cache">● 本地缓存 · 上次更新于 ${esc(rateState.date)}${rateState.time ? ' ' + esc(rateState.time) : ''}</span>`;
     } else {
-      badgeHtml = `<span class="rate-badge rate-badge-base">● 离线基准 · Excel 初始参考值 (2,652)</span>`;
+      badgeHtml = `<span class="rate-badge rate-badge-base">● 离线基准 · 初始参考值 (2,652)</span>`;
     }
 
     page.innerHTML = `
