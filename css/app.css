@@ -1192,6 +1192,48 @@ body.hide-header .food-search-wrap { top: 0; }
   border-color: var(--primary);
 }
 
+/* ---------- 启动欢迎页（Splash Screen） ---------- */
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  inset: 0;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
+  background-color: #FFFDF5;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  box-sizing: border-box;
+  transition: opacity 0.3s ease-out, visibility 0.3s ease-out;
+  pointer-events: auto;
+}
+.splash-screen.fade-out {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.splash-img {
+  width: 72vw;
+  max-width: 340px;
+  height: auto;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+@media (min-width: 600px) {
+  .splash-img {
+    width: 360px;
+    max-width: 360px;
+  }
+}
+
 /* ---------- 响应式 ---------- */
 @media (min-width: 430px) {
   .app-main { padding: 0 16px 28px; }
