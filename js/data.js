@@ -1569,6 +1569,8 @@ window.TRIP_DATA = {
       ],
       "stayNote": "包车1",
       "area": "bromo",
+      "phone": "+62 812-3296-6800",
+      "tel": "+6281232966800",
       "images": [
         "assets/hotel/h01.jpg"
       ]
@@ -1586,6 +1588,8 @@ window.TRIP_DATA = {
       ],
       "stayNote": "回酒店再坐车，包车1",
       "area": "赛武",
+      "phone": "+62 853-8556-5541",
+      "tel": "+6285385565541",
       "images": [
         "assets/hotel/h02.jpg",
         "assets/hotel/h03.jpg"
@@ -1604,6 +1608,8 @@ window.TRIP_DATA = {
       ],
       "stayNote": "回酒店再坐车，包车1",
       "area": "泗水",
+      "phone": "+62 31-8685555",
+      "tel": "+62318685555",
       "images": [
         "assets/hotel/h04.jpg"
       ]
@@ -1621,6 +1627,8 @@ window.TRIP_DATA = {
       ],
       "stayNote": "包车",
       "area": "巴厘岛",
+      "phone": "+62 361-285204",
+      "tel": "+62361285204",
       "images": [
         "assets/hotel/h05.jpg",
         "assets/hotel/h06.jpg"
@@ -1639,6 +1647,8 @@ window.TRIP_DATA = {
       ],
       "stayNote": "",
       "area": "科莫多岛",
+      "phone": "+62 853-3788-5406",
+      "tel": "+6285337885406",
       "images": [
         "assets/hotel/h07.jpg",
         "assets/hotel/h08.jpg"
@@ -1658,6 +1668,8 @@ window.TRIP_DATA = {
       ],
       "stayNote": "",
       "area": "巴厘岛",
+      "phone": "+62 813-2094-8556",
+      "tel": "+6281320948556",
       "images": [
         "assets/hotel/h09.jpg",
         "assets/hotel/h10.jpg",

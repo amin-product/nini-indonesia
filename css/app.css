@@ -999,9 +999,32 @@ body.hide-header .food-search-wrap { top: 0; }
 .tool-hotel-row:first-child { padding-top: 2px; }
 .tool-hotel-row:last-child { border-bottom: none; padding-bottom: 2px; }
 .tool-hotel-date { font-size: 13px; color: var(--text-weak); margin-bottom: 6px; }
+.tool-hotel-region { color: var(--primary); font-weight: 600; }
 .tool-hotel-name { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
 .tool-hotel-en { font-size: 12px; font-weight: 500; color: var(--text-hint); margin-left: 6px; }
 .tool-hotel-addr { font-size: 13px; color: var(--text-weak); margin-bottom: 10px; line-height: 1.5; }
+.tool-hotel-phone {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  margin-top: -2px;
+  margin-bottom: 2px;
+  line-height: 1.4;
+}
+.tool-hotel-phone .phone-icon {
+  font-size: 13px;
+  flex: none;
+}
+.tool-hotel-phone .phone-link {
+  color: var(--primary);
+  text-decoration: none;
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+.tool-hotel-phone .phone-link:active {
+  opacity: .8;
+}
 
 /* ---------- 工具-航班汇总 ---------- */
 .tool-flight-groups {

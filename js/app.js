@@ -1273,6 +1273,44 @@
     return quickHtml + groupHtml + embHtml;
   }
 
+  function getHotelRegion(h) {
+    if (!h) return '';
+    const map = {
+      h01: 'Bromo',
+      h02: '赛武',
+      h03: '泗水',
+      h04: '沙努尔',
+      h05: '科莫多',
+      h06: '乌布',
+    };
+    if (map[h.id]) return map[h.id];
+    if (h.area) {
+      if (h.area.toLowerCase() === 'bromo') return 'Bromo';
+      if (h.area.startsWith('科莫多')) return '科莫多';
+      return h.area;
+    }
+    return '';
+  }
+
+  const HOTEL_PHONES = {
+    h01: { display: '+62 812-3296-6800', tel: '+6281232966800' },
+    h02: { display: '+62 853-8556-5541', tel: '+6285385565541' },
+    h03: { display: '+62 31-8685555',    tel: '+62318685555' },
+    h04: { display: '+62 361-285204',    tel: '+62361285204' },
+    h05: { display: '+62 853-3788-5406', tel: '+6285337885406' },
+    h06: { display: '+62 813-2094-8556', tel: '+6281320948556' },
+  };
+
+  function getHotelPhone(h) {
+    if (!h) return null;
+    if (h.phone && h.tel) return { display: h.phone, tel: h.tel };
+    const p = HOTEL_PHONES[h.id];
+    if (p) return p;
+    const found = hotels.find(x => x.id === h.id);
+    if (found && found.phone && found.tel) return { display: found.phone, tel: found.tel };
+    return null;
+  }
+
   function renderToolHotels() {
     const el = document.getElementById('tool-hotel-list');
     if (!el) return;
@@ -1280,10 +1318,20 @@
     const html = days.map(d => {
       if (!d.hotel) return '';
       const h = d.hotel;
+      const region = getHotelRegion(h);
+      const regionPart = region ? ` · <span class="tool-hotel-region">${esc(region)}</span>` : '';
+      const phone = getHotelPhone(h);
+      const phoneHtml = phone ? `
+        <div class="tool-hotel-phone">
+          <span class="phone-icon" aria-hidden="true">☎️</span>
+          <a class="phone-link" href="tel:${esc(phone.tel)}">${esc(phone.display)}</a>
+        </div>
+      ` : '';
       return `<div class="tool-hotel-row">
-        <div class="tool-hotel-date">${esc(d.label)} · ${esc(d.weekday)}</div>
+        <div class="tool-hotel-date">${esc(d.label)} · ${esc(d.weekday)}${regionPart}</div>
         <div class="tool-hotel-name">${esc(h.name)}${h.nameEn ? `<span class="tool-hotel-en">${esc(h.nameEn)}</span>` : ''}</div>
         <div class="tool-hotel-addr">${esc(h.address)}</div>
+        ${phoneHtml}
         <div class="hotel-actions" style="margin-top:8px">
           <button class="btn" data-copy="${esc(h.address)}">📋 复制地址</button>
           <a class="btn btn-map" href="${mapsSearchUrl(h.name, h.address)}" target="_blank" rel="noopener noreferrer">🗺️ 地图</a>

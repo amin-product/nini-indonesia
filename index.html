@@ -62,11 +62,11 @@
     <img class="splash-img" src="欢迎页图.png" alt="赤道小尼">
   </div>
   <script>
-    // 欢迎页：保持约 1 秒后轻微自然淡出并彻底移除
+    // 欢迎页：保持约 2 秒后轻微自然淡出并彻底移除
     (function () {
       const splash = document.getElementById('splash-screen');
       if (!splash) return;
-      const minDisplayTime = 1000;
+      const minDisplayTime = 2000;
       const startTime = Date.now();
 
       function dismissSplash() {
@@ -84,7 +84,7 @@
         dismissSplash();
       } else {
         window.addEventListener('load', dismissSplash, { once: true });
-        setTimeout(dismissSplash, 2500);
+        setTimeout(dismissSplash, 3500);
       }
     })();
   </script>
