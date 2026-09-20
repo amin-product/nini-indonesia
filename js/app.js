@@ -1128,7 +1128,7 @@
     document.addEventListener('click', e => {
       const t = e.target.closest('img');
       if (!t || t.id === 'lightbox-img') return;
-      if (t.classList.contains('day-ref-thumb') || t.closest('.tl-images') || t.closest('.hotel-screens') || t.classList.contains('detail-img')) {
+      if (t.classList.contains('day-ref-thumb') || t.closest('.tl-images') || t.closest('.hotel-screens')) {
         img.src = t.src;
         box.hidden = false;
       }
