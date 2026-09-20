@@ -612,7 +612,7 @@
   // ---------------------------------------------------------------------------
   // 筛选维度只有「地区」：只列能明确归属的地区。
   // 全国普遍存在 / 无法归属的食物 region 为空数组，只出现在「全部」里。
-  const FOOD_REGION_ORDER = ['东爪哇', '巴厘', '科莫多/弗洛勒斯'];
+  const FOOD_REGION_ORDER = ['东爪哇', '巴厘', '科莫多/弗洛勒斯', '吉隆坡机场', '香港机场'];
 
   function foodRegions() {
     const present = new Set();
@@ -634,7 +634,7 @@
     if (!filters.includes(state.foodFilter)) state.foodFilter = '全部';
     page.innerHTML = `
       <div class="food-search-wrap">
-        <input type="search" class="food-search" id="food-search" placeholder="搜索中文名 / Indonesian" value="${esc(state.foodSearch)}">
+        <input type="search" class="food-search" id="food-search" placeholder="搜索美食 / 餐厅" value="${esc(state.foodSearch)}">
         ${locHint}
         <div class="food-filter" id="food-filter">
           ${filters.map(f => `
@@ -670,11 +670,19 @@
     let list = foods.slice();
     const q = state.foodSearch.toLowerCase();
     if (q) {
-      list = list.filter(f =>
-        f.nameId.toLowerCase().includes(q) ||
-        f.nameCn.toLowerCase().includes(q) ||
-        f.desc.toLowerCase().includes(q)
-      );
+      list = list.filter(f => {
+        const matchBasic = (f.nameId && f.nameId.toLowerCase().includes(q)) ||
+          (f.nameCn && f.nameCn.toLowerCase().includes(q)) ||
+          (f.desc && f.desc.toLowerCase().includes(q)) ||
+          (f.englishName && f.englishName.toLowerCase().includes(q)) ||
+          (f.subtitle && f.subtitle.toLowerCase().includes(q)) ||
+          (f.ingredients && f.ingredients.toLowerCase().includes(q));
+        if (matchBasic) return true;
+        if (f.dishes && Array.isArray(f.dishes)) {
+          return f.dishes.some(d => (d.name && d.name.toLowerCase().includes(q)) || (d.note && d.note.toLowerCase().includes(q)));
+        }
+        return false;
+      });
     }
     // 只按地区筛选；无法归属地区的食物不会命中任何地区
     const filter = state.foodFilter;
@@ -695,7 +703,8 @@
     }
     grid.innerHTML = list.map(f => {
       const regions = f.region || [];
-      const recommended = areas.length && areas.some(a => regions.includes(a));
+      const recommended = f.type !== 'restaurant' && areas.length && areas.some(a => regions.includes(a));
+      const subTitle = f.type === 'restaurant' ? (f.subtitle || f.nameCn) : f.nameCn;
       return `
       <article class="food-card" data-food="${esc(f.id)}">
         <div class="img-wrap">
@@ -704,8 +713,8 @@
         </div>
         <div class="info">
           <div class="name-id">${esc(f.nameId)}</div>
-          <div class="name-cn">${esc(f.nameCn)}</div>
-          ${regions.length ? `<div class="region">${regions.map(r => esc(r)).join(' · ')}</div>` : ''}
+          <div class="name-cn">${esc(subTitle)}</div>
+          ${f.type !== 'restaurant' && regions.length ? `<div class="region">${regions.map(r => esc(r)).join(' · ')}</div>` : ''}
         </div>
       </article>`;
     }).join('');
@@ -719,27 +728,86 @@
     state.selectedFood = food;
     const regions = food.region || [];
     const panel = document.getElementById('food-detail');
-    panel.innerHTML = `
-      <img class="detail-img" src="${esc(food.img)}" alt="${esc(food.nameId)}">
-      <h2 class="detail-name-id">${esc(food.nameId)}</h2>
-      <div class="detail-name-cn">${esc(food.nameCn)}</div>
-      ${regions.length ? `<div class="detail-meta">
-        ${regions.map(r => `<span>${esc(r)}</span>`).join('')}
-      </div>` : ''}
-      <div class="detail-section">
-        <h4>简介</h4>
-        <p>${esc(food.desc)}</p>
-      </div>
-      <div class="detail-section">
-        <h4>主要食材 / 特点</h4>
-        <p>${esc(food.ingredients)}</p>
-      </div>
-      <div class="ai-note">以上地区归属、简介、食材为自动补充，非 Excel 原文。</div>
-      <button class="btn-staff" id="btn-staff">给店员看</button>
-    `;
+
+    if (food.type === 'restaurant') {
+      const dishesHtml = (food.dishes || []).map(d => `
+        <div class="restaurant-dish-item">
+          <div class="dish-name">✨ ${esc(d.name)}</div>
+          <div class="dish-note">${esc(d.note)}</div>
+        </div>
+      `).join('');
+
+      const mapBtnHtml = food.mapUrl ? `
+        <a href="${esc(food.mapUrl)}" target="_blank" rel="noopener noreferrer" class="btn-airport-map">
+          📍 查看机场位置
+        </a>
+      ` : '';
+
+      panel.innerHTML = `
+        <img class="detail-img" src="${esc(food.img)}" alt="${esc(food.nameId)}">
+        <h2 class="detail-name-id">${esc(food.nameId)}</h2>
+        <div class="detail-name-cn">${esc(food.nameCn)}</div>
+        <div class="detail-meta">
+          ${food.airport ? `<span>${esc(food.airport)}</span>` : ''}
+          ${food.terminal ? `<span>${esc(food.terminal)}</span>` : ''}
+          ${food.subtitle ? `<span>${esc(food.subtitle.split(' · ')[0])}</span>` : ''}
+        </div>
+        <div class="restaurant-info-box">
+          <div class="restaurant-info-row">
+            <span class="restaurant-info-icon">📍</span>
+            <div class="restaurant-info-content">
+              <strong>位置：</strong>${esc(food.locationDesc || food.area)}
+              ${food.isAirside ? '<span class="badge-airside">禁区内</span>' : ''}
+            </div>
+          </div>
+          <div class="restaurant-info-row">
+            <span class="restaurant-info-icon">🕐</span>
+            <div class="restaurant-info-content">
+              <strong>营业时间：</strong>${esc(food.hours)}
+            </div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>餐厅简介</h4>
+          <p>${esc(food.desc)}</p>
+        </div>
+        <div class="detail-section">
+          <h4>推荐必点</h4>
+          <div class="restaurant-dishes">
+            ${dishesHtml}
+          </div>
+        </div>
+        <div class="detail-section">
+          <h4>💡 转机食用建议</h4>
+          <p>${esc(food.transferTip)}</p>
+        </div>
+        ${mapBtnHtml}
+        <div class="restaurant-footnote">✈️ 赤道小尼的转机觅食备忘</div>
+      `;
+    } else {
+      panel.innerHTML = `
+        <img class="detail-img" src="${esc(food.img)}" alt="${esc(food.nameId)}">
+        <h2 class="detail-name-id">${esc(food.nameId)}</h2>
+        <div class="detail-name-cn">${esc(food.nameCn)}</div>
+        ${regions.length ? `<div class="detail-meta">
+          ${regions.map(r => `<span>${esc(r)}</span>`).join('')}
+        </div>` : ''}
+        <div class="detail-section">
+          <h4>简介</h4>
+          <p>${esc(food.desc)}</p>
+        </div>
+        <div class="detail-section">
+          <h4>主要食材 / 特点</h4>
+          <p>${esc(food.ingredients)}</p>
+        </div>
+        <div class="ai-note">以上地区归属、简介、食材为自动补充，非 Excel 原文。</div>
+        <button class="btn-staff" id="btn-staff">给店员看</button>
+      `;
+      document.getElementById('btn-staff').addEventListener('click', () => openStaffMode(food));
+    }
+
     const sheet = document.getElementById('food-sheet');
     sheet.hidden = false;
-    document.getElementById('btn-staff').addEventListener('click', () => openStaffMode(food));
   }
 
   function bindSheet() {
