@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#F5F2EB" media="(prefers-color-scheme: light)">
+  <meta name="apple-mobile-web-app-title" content="赤道小尼">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>赤道小尼 · 印尼 2026</title>
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="assets/icons/icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+  <div id="app" class="app">
+    <!-- 顶部日期条 -->
+    <header class="app-header" id="date-strip">
+      <div class="date-list" id="date-list" role="tablist" aria-label="日期导航"></div>
+    </header>
+
+    <!-- 页面主体：四个一级页面 -->
+    <main class="app-main" id="app-main">
+      <section id="page-trip" class="page page-trip" aria-label="行程"></section>
+      <section id="page-food" class="page page-food" aria-label="吃什么" hidden></section>
+      <section id="page-rate" class="page page-rate" aria-label="汇率" hidden></section>
+      <section id="page-tools" class="page page-tools" aria-label="工具" hidden></section>
+    </main>
+
+    <!-- 底部导航 -->
+    <nav class="bottom-nav" id="bottom-nav">
+      <button class="nav-item active" data-tab="trip" aria-label="行程">
+        <span class="nav-icon" aria-hidden="true">🗓️</span>
+        <span class="nav-label">行程</span>
+      </button>
+      <button class="nav-item" data-tab="food" aria-label="吃什么">
+        <span class="nav-icon" aria-hidden="true">🍽️</span>
+        <span class="nav-label">吃什么</span>
+      </button>
+      <button class="nav-item" data-tab="rate" aria-label="汇率">
+        <span class="nav-icon" aria-hidden="true">💱</span>
+        <span class="nav-label">汇率</span>
+      </button>
+      <button class="nav-item" data-tab="tools" aria-label="工具">
+        <span class="nav-icon" aria-hidden="true">🧰</span>
+        <span class="nav-label">工具</span>
+      </button>
+    </nav>
+
+    <!-- 轻提示 -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <!-- 食物详情抽屉 -->
+    <div class="sheet food-sheet" id="food-sheet" hidden aria-hidden="true">
+      <div class="sheet-backdrop" data-close-sheet></div>
+      <div class="sheet-panel" role="dialog" aria-modal="true" aria-labelledby="food-sheet-title">
+        <div class="sheet-handle" data-close-sheet></div>
+        <div class="food-detail" id="food-detail"></div>
+      </div>
+    </div>
+
+    <!-- 给店员看 全屏 -->
+    <div class="staff-mode" id="staff-mode" hidden aria-hidden="true">
+      <div class="staff-content" id="staff-content"></div>
+      <button class="staff-close" id="staff-close" aria-label="关闭">✕</button>
+    </div>
+
+    <!-- 图片灯箱 -->
+    <div class="lightbox" id="lightbox" hidden aria-hidden="true">
+      <img src="" alt="参考图" id="lightbox-img">
+      <button class="lightbox-close" aria-label="关闭">✕</button>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    // 仅在 http/https 环境下注册 Service Worker（file:// 不注册）
+    if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js', { scope: './' }).then(reg => {
+          reg.addEventListener('updatefound', () => {
+            const installing = reg.installing;
+            if (!installing) return;
+            installing.addEventListener('statechange', () => {
+              if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+                const toast = document.getElementById('toast');
+                if (toast) {
+                  toast.textContent = '赤道小尼已就绪最新版，下次打开自动更新';
+                  toast.classList.add('show');
+                  setTimeout(() => toast.classList.remove('show'), 3000);
+                }
+              }
+            });
+          });
+        }).catch(() => {});
+      });
+    }
+  </script>
+</body>
+</html>
