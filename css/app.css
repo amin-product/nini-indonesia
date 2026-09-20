@@ -742,6 +742,96 @@ body.hide-header .food-search-wrap { top: 0; }
   cursor: pointer;
 }
 
+/* ---------- 机场转机餐厅详情适配 ---------- */
+.badge-airside {
+  display: inline-block;
+  background: #fff2e8;
+  color: #d46b08;
+  border: 1px solid #ffd591;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.restaurant-info-box {
+  background: var(--bg-soft);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.restaurant-info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.restaurant-info-icon {
+  font-size: 15px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.restaurant-info-content {
+  flex: 1;
+  color: var(--text);
+}
+.restaurant-dishes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 6px;
+}
+.restaurant-dish-item {
+  background: var(--bg-soft);
+  border-radius: var(--radius-xs);
+  padding: 10px 12px;
+}
+.restaurant-dish-item .dish-name {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+.restaurant-dish-item .dish-note {
+  font-size: 12px;
+  color: var(--text-weak);
+  margin-top: 3px;
+  line-height: 1.45;
+}
+.btn-airport-map {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 18px;
+  padding: 13px 16px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  box-sizing: border-box;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(230, 115, 60, 0.25);
+  transition: opacity 0.15s ease;
+}
+.btn-airport-map:active {
+  opacity: 0.9;
+}
+.restaurant-footnote {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-hint);
+  margin-top: 18px;
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+
 /* ---------- 给店员看 ---------- */
 .staff-mode {
   position: fixed;
