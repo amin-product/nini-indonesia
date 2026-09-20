@@ -679,6 +679,13 @@
             <div class="day-ref-strip">${imgs}</div></div>`;
   }
 
+  function hasDistinctEn(name, nameEn) {
+    if (!nameEn) return false;
+    const n = String(name || '').trim().toLowerCase();
+    const en = String(nameEn || '').trim().toLowerCase();
+    return Boolean(en && en !== n);
+  }
+
   function renderHotel(day) {
     if (!day.hotel) {
       return `<div class="card"><div class="section-title">🏨 住宿</div><p class="card-sub">今日返程，无住宿安排。</p></div>`;
@@ -688,7 +695,7 @@
     return `<div class="card hotel-card">
       <div class="hotel-name-wrap">
         <h3 class="hotel-name">${esc(h.name)}</h3>
-        ${h.nameEn ? `<span class="hotel-name-en">${esc(h.nameEn)}</span>` : ''}
+        ${hasDistinctEn(h.name, h.nameEn) ? `<span class="hotel-name-en">${esc(h.nameEn)}</span>` : ''}
         ${h.inherited ? `<span class="hotel-inherited">沿用前一晚</span>` : ''}
       </div>
       <p class="hotel-address">${addr}</p>
@@ -1273,18 +1280,40 @@
     return quickHtml + groupHtml + embHtml;
   }
 
-  function getHotelRegion(h) {
-    if (!h) return '';
-    const map = {
-      h01: 'Bromo',
-      h02: '赛武',
-      h03: '泗水',
-      h04: '沙努尔',
-      h05: '科莫多',
-      h06: '乌布',
-    };
-    if (map[h.id]) return map[h.id];
-    if (h.area) {
+  const HOTEL_REGION_BY_ID = {
+    h01: 'Bromo',
+    h02: '赛武',
+    h03: '泗水',
+    h04: '沙努尔',
+    h05: '科莫多',
+    h06: '乌布',
+  };
+
+  const HOTEL_REGION_BY_DATE = {
+    '2026-09-24': 'Bromo',
+    '2026-09-25': '赛武',
+    '2026-09-26': '泗水',
+    '2026-09-27': '沙努尔',
+    '2026-09-28': '沙努尔',
+    '2026-09-29': '科莫多',
+    '2026-09-30': '科莫多',
+    '2026-10-01': '乌布',
+    '2026-10-02': '乌布',
+    '2026-10-03': '泗水',
+  };
+
+  function getHotelRegion(h, d) {
+    if (h && h.id && HOTEL_REGION_BY_ID[h.id]) return HOTEL_REGION_BY_ID[h.id];
+    if (d && d.date && HOTEL_REGION_BY_DATE[d.date]) return HOTEL_REGION_BY_DATE[d.date];
+    if (d && d.label) {
+      if (d.label === '9/24') return 'Bromo';
+      if (d.label === '9/25') return '赛武';
+      if (d.label === '9/26' || d.label === '10/3') return '泗水';
+      if (d.label === '9/27' || d.label === '9/28') return '沙努尔';
+      if (d.label === '9/29' || d.label === '9/30') return '科莫多';
+      if (d.label === '10/1' || d.label === '10/2') return '乌布';
+    }
+    if (h && h.area) {
       if (h.area.toLowerCase() === 'bromo') return 'Bromo';
       if (h.area.startsWith('科莫多')) return '科莫多';
       return h.area;
@@ -1318,7 +1347,7 @@
     const html = days.map(d => {
       if (!d.hotel) return '';
       const h = d.hotel;
-      const region = getHotelRegion(h);
+      const region = getHotelRegion(h, d);
       const regionPart = region ? ` · <span class="tool-hotel-region">${esc(region)}</span>` : '';
       const phone = getHotelPhone(h);
       const phoneHtml = phone ? `
@@ -1327,9 +1356,10 @@
           <a class="phone-link" href="tel:${esc(phone.tel)}">${esc(phone.display)}</a>
         </div>
       ` : '';
+      const subTitleHtml = hasDistinctEn(h.name, h.nameEn) ? `<span class="tool-hotel-en">${esc(h.nameEn)}</span>` : '';
       return `<div class="tool-hotel-row">
         <div class="tool-hotel-date">${esc(d.label)} · ${esc(d.weekday)}${regionPart}</div>
-        <div class="tool-hotel-name">${esc(h.name)}${h.nameEn ? `<span class="tool-hotel-en">${esc(h.nameEn)}</span>` : ''}</div>
+        <div class="tool-hotel-name">${esc(h.name)}${subTitleHtml}</div>
         <div class="tool-hotel-addr">${esc(h.address)}</div>
         ${phoneHtml}
         <div class="hotel-actions" style="margin-top:8px">
