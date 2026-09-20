@@ -7,7 +7,7 @@
   4. 外部 API 请求（汇率等）：透传放行，不污染静态缓存
 */
 
-const CACHE_NAME = 'chidaoxiaoni-v1.1';
+const CACHE_NAME = 'chidaoxiaoni-v1.2';
 
 const PRECACHE_URLS = [
   './',
@@ -63,6 +63,11 @@ const PRECACHE_URLS = [
   './assets/food/f26.jpg',
   './assets/food/f27.jpg',
   './assets/food/f28.jpg',
+  // 机场转机餐厅推荐图 (4 张 WebP)
+  './assets/food/serai-klia.webp',
+  './assets/food/grandmamas-klia.webp',
+  './assets/food/men-wah-hkia.webp',
+  './assets/food/tasty-congee-hkia.webp',
   // 酒店参考图 (12 张)
   './assets/hotel/h01.jpg',
   './assets/hotel/h02.jpg',
