@@ -1356,10 +1356,9 @@
           <a class="phone-link" href="tel:${esc(phone.tel)}">${esc(phone.display)}</a>
         </div>
       ` : '';
-      const subTitleHtml = hasDistinctEn(h.name, h.nameEn) ? `<span class="tool-hotel-en">${esc(h.nameEn)}</span>` : '';
       return `<div class="tool-hotel-row">
         <div class="tool-hotel-date">${esc(d.label)} · ${esc(d.weekday)}${regionPart}</div>
-        <div class="tool-hotel-name">${esc(h.name)}${subTitleHtml}</div>
+        <div class="tool-hotel-name">${esc(h.name)}</div>
         <div class="tool-hotel-addr">${esc(h.address)}</div>
         ${phoneHtml}
         <div class="hotel-actions" style="margin-top:8px">
