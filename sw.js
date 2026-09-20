@@ -7,9 +7,10 @@
   4. 外部 API 请求（汇率等）：透传放行，不污染静态缓存
 */
 
-const CACHE_NAME = 'chidaoxiaoni-v1.2';
+const CACHE_NAME = 'chidaoxiaoni-v1.3';
 
-const PRECACHE_URLS = [
+// A. 核心启动资源（必须成功，任一失败则中断 install，避免生成残缺离线应用）
+const CORE_PRECACHE_URLS = [
   './',
   './index.html',
   './css/app.css',
@@ -20,6 +21,10 @@ const PRECACHE_URLS = [
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
   './assets/icons/apple-touch-icon.png',
+];
+
+// B. 旅行核心图片资源（全量主动预缓存；允许单张因网络抖动失败，不阻断 SW 安装）
+const IMAGE_PRECACHE_URLS = [
   // 行程路线参考图 (13 张)
   './assets/day/d01.jpg',
   './assets/day/d02.jpg',
@@ -83,12 +88,34 @@ const PRECACHE_URLS = [
   './assets/hotel/h12.jpg',
 ];
 
-// 安装：全量预缓存所有静态资源
+// 安装：核心资源严格缓存 + 图片资源容错预缓存
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(PRECACHE_URLS))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(async cache => {
+      // 1. 核心启动资源：必须全部成功，任一失败则中断 install
+      await cache.addAll(CORE_PRECACHE_URLS);
+
+      // 2. 图片资源：全量主动预缓存，单张失败容错（Promise.allSettled）
+      const results = await Promise.allSettled(
+        IMAGE_PRECACHE_URLS.map(async url => {
+          try {
+            const resp = await fetch(url);
+            if (!resp.ok) {
+              throw new Error(`HTTP ${resp.status}`);
+            }
+            await cache.put(url, resp);
+          } catch (err) {
+            console.warn(`[SW Precache] 图片预缓存失败，已记录并在后续联网请求时自动补充: ${url}`, err);
+            throw err;
+          }
+        })
+      );
+
+      const failedCount = results.filter(r => r.status === 'rejected').length;
+      if (failedCount > 0) {
+        console.warn(`[SW Precache] 共 ${failedCount} 张图片预缓存未成功，核心 Service Worker 已正常安装就绪。`);
+      }
+    }).then(() => self.skipWaiting())
   );
 });
 
@@ -134,7 +161,35 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // 3. 静态资源（CSS, JS, 图片, 图标）：缓存优先
+  // 3. 核心业务代码（CSS / JS）：优先返回本地缓存保障离线秒开，联网时后台静默校验并刷新缓存（SWR 机制）
+  // 解决后续仅修改业务代码而忘记手动递增 CACHE_NAME 时，老用户长期命中旧缓存的风险
+  const pathname = url.pathname;
+  const isCoreCode = pathname.endsWith('/css/app.css') ||
+                     pathname.endsWith('/js/data.js') ||
+                     pathname.endsWith('/js/app.js');
+
+  if (isCoreCode) {
+    e.respondWith(
+      caches.match(req).then(cached => {
+        // 后台静默向网络请求最新版本；若联网成功则平滑替换缓存
+        const updatePromise = fetch(req).then(resp => {
+          if (resp && resp.status === 200) {
+            const copy = resp.clone();
+            caches.open(CACHE_NAME).then(c => c.put(req, copy));
+          }
+          return resp;
+        }).catch(() => {
+          // 离线状态下忽略后台更新失败
+        });
+
+        // 本地已有缓存则立即返回（毫秒级离线渲染）；无缓存时等待网络
+        return cached || updatePromise;
+      })
+    );
+    return;
+  }
+
+  // 4. 其他静态资源（图片、图标等，占 97% 体积）：严格缓存优先（Cache First）
   e.respondWith(
     caches.match(req).then(cached => {
       if (cached) return cached;
