@@ -544,18 +544,17 @@
       return `
       <div class="card flight-card">
         <div class="flight-route">
-          <div class="flight-city">
+          <div class="flight-city flight-from">
             <span class="code">${esc(f.fromCode || f.from)}</span>
             <span class="name">${esc(f.from)}</span>
+            <span class="time">${f.dep || '--:--'}</span>
           </div>
           <div class="flight-arrow">✈️</div>
-          <div class="flight-city">
+          <div class="flight-city flight-to">
             <span class="code">${esc(f.toCode || f.to)}</span>
             <span class="name">${esc(f.to)}</span>
+            <span class="time">${f.arr || '--:--'}</span>
           </div>
-        </div>
-        <div class="flight-times">
-          <span>${f.dep || '--:--'}</span><span>${f.arr || '--:--'}</span>
         </div>
         ${noLine}
         ${airportLine}
@@ -1178,7 +1177,7 @@
       return `<div class="card" id="tool-hotel-list"></div>`;
     }
     if (screen === 'flights') {
-      return `<div class="card" id="tool-flight-list"></div>`;
+      return `<div id="tool-flight-list" class="tool-flight-groups"></div>`;
     }
     return '';
   }
@@ -1294,22 +1293,221 @@
     el.innerHTML = html;
   }
 
+  function formatLayoverBlock(layoverStr, nextDep) {
+    if (!layoverStr) return '';
+    const parts = layoverStr.split('·').map(s => s.trim());
+    let desc = parts[0] || '';
+    if (parts[1] && parts[1].includes('停留')) {
+      desc += ' · ' + parts[1];
+    }
+    const luggage = parts.find(p => p.includes('行李')) || '';
+    const nextLine = nextDep ? `下一班 <b class="next-time">${nextDep}</b> 起飞` : '';
+
+    return `
+      <div class="tool-flight-layover">
+        <div class="layover-inner">
+          <div class="layover-top">
+            <span class="layover-icon">🔁</span>
+            <span class="layover-desc">${esc(desc)}</span>
+          </div>
+          <div class="layover-bot">
+            ${nextLine ? `<span class="layover-next">${nextLine}</span>` : ''}
+            ${luggage ? `<span class="layover-luggage">${esc(luggage)}</span>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderTicketBox(tickets, orderNo, orderLabel) {
+    if ((!tickets || !tickets.length) && !orderNo) return '';
+    const ticketRows = (tickets || []).map(t => `
+      <div class="ticket-row">
+        <span class="ticket-name">${esc(t.name)}</span>
+        <span class="ticket-no">${t.ticketNo ? esc(t.ticketNo) : '票号未提供'}</span>
+        ${t.bookRef ? `<span class="ticket-pnr">PNR: ${esc(t.bookRef)}</span>` : ''}
+      </div>
+    `).join('');
+
+    const orderRow = orderNo ? `
+      <div class="ticket-order">订单号 ${esc(orderNo)}${orderLabel ? ` · ${esc(orderLabel)}` : ''}</div>
+    ` : '';
+
+    return `
+      <div class="tool-ticket-box">
+        <button type="button" class="btn-ticket-toggle" aria-expanded="false">
+          <span class="toggle-icon">⌄</span>
+          <span class="toggle-text">查看票务信息</span>
+        </button>
+        <div class="tool-ticket-drawer" hidden>
+          <div class="ticket-list">${ticketRows}</div>
+          ${orderRow}
+        </div>
+      </div>
+    `;
+  }
+
   function renderToolFlights() {
     const el = document.getElementById('tool-flight-list');
     if (!el) return;
-    el.innerHTML = flights.map(f => `
-      <div class="tool-flight">
-        <div class="tool-flight-date">${fmtDate(f.date)}</div>
-        <div class="tool-flight-route">${esc(f.from)} <b>${esc(f.fromCode)}</b>${f.fromTerminal ? ` ${esc(f.fromTerminal)}` : ''} → ${esc(f.to)} <b>${esc(f.toCode)}</b>${f.toTerminal ? ` ${esc(f.toTerminal)}` : ''}</div>
-        <div class="tool-flight-time">${f.dep || '--:--'} → ${f.arr || '--:--'}</div>
-        <div class="tool-flight-no">${f.flightNo ? `✈️ ${esc(f.airline || '')} ${esc(f.flightNo)}` : esc(f.flightNoNote)}</div>
-        ${(f.fromAirport || f.toAirport) ? `<div class="tool-flight-ap">${esc(f.fromAirport || '')}${f.fromTerminal ? ` ${esc(f.fromTerminal)}` : ''} → ${esc(f.toAirport || '')}${f.toTerminal ? ` ${esc(f.toTerminal)}` : ''}</div>` : ''}
-        ${f.layover ? `<div class="tool-flight-meta">🔁 ${esc(f.layover)}</div>` : ''}
-        ${f.segments && f.segments.length > 1 ? `<div class="tool-flight-segs">${f.segments.map(sg => `<div>· ${esc(sg.airline)} ${esc(sg.flightNo)}　${esc(sg.fromCode)}${sg.fromTerminal ? ` ${esc(sg.fromTerminal)}` : ''} ${esc(sg.dep)} → ${esc(sg.toCode)}${sg.toTerminal ? ` ${esc(sg.toTerminal)}` : ''} ${esc(sg.arr)}</div>`).join('')}</div>` : ''}
-        ${f.tickets && f.tickets.length ? `<div class="tool-flight-bk">${f.tickets.map(t => `${esc(t.name)}　${t.ticketNo ? esc(t.ticketNo) : '票号未提供'}${t.bookRef ? `（${esc(t.bookRef)}）` : ''}`).join('<br>')}</div>` : ''}
-        ${f.orderNo ? `<div class="tool-flight-order">订单号 ${esc(f.orderNo)}${f.orderLabel ? ` · ${esc(f.orderLabel)}` : ''}</div>` : ''}
-      </div>
-    `).join('');
+
+    // 按乘机日期分组
+    const groupMap = new Map();
+    const groupList = [];
+    flights.forEach(f => {
+      if (!groupMap.has(f.date)) {
+        const grp = { date: f.date, flights: [] };
+        groupMap.set(f.date, grp);
+        groupList.push(grp);
+      }
+      groupMap.get(f.date).flights.push(f);
+    });
+
+    const html = groupList.map(grp => {
+      const dMatch = days.find(d => d.date === grp.date);
+      let dayTag = '';
+      if (grp.date === '2026-09-24') dayTag = '去程 · 上海 → 泗水';
+      else if (grp.date === '2026-10-04') dayTag = '返程 · 泗水 → 上海';
+      else if (dMatch) dayTag = dMatch.short || dMatch.title;
+      else dayTag = `${grp.flights[0].from} → ${grp.flights[grp.flights.length - 1].to}`;
+
+      // 展开所有航段（包含 segments 拆分，如 10/4 国泰联程 CX780 + CX362）
+      const legs = [];
+      grp.flights.forEach(f => {
+        if (f.segments && f.segments.length > 1) {
+          f.segments.forEach((sg, idx) => {
+            legs.push({
+              airline: sg.airline,
+              flightNo: sg.flightNo,
+              from: sg.fromCity,
+              fromCode: sg.fromCode,
+              fromAirport: sg.fromAirport,
+              fromTerminal: sg.fromTerminal,
+              dep: sg.dep,
+              to: sg.toCity,
+              toCode: sg.toCode,
+              toAirport: sg.toAirport,
+              toTerminal: sg.toTerminal,
+              arr: sg.arr,
+              layoverAfter: idx === 0 ? f.layover : '',
+              nextDep: idx === 0 && f.segments[1] ? f.segments[1].dep : '',
+              timezoneNote: f.timezoneNote,
+            });
+          });
+        } else {
+          legs.push({
+            airline: f.airline,
+            flightNo: f.flightNo,
+            flightNoNote: f.flightNoNote,
+            from: f.from,
+            fromCode: f.fromCode,
+            fromAirport: f.fromAirport,
+            fromTerminal: f.fromTerminal,
+            dep: f.dep,
+            to: f.to,
+            toCode: f.toCode,
+            toAirport: f.toAirport,
+            toTerminal: f.toTerminal,
+            arr: f.arr,
+            layoverAfter: f.layover,
+            nextDep: '',
+            timezoneNote: f.timezoneNote,
+          });
+        }
+      });
+
+      // 同一天多航班联程（如 9/24），补全第一段的下一班起飞时间 nextDep
+      for (let i = 0; i < legs.length - 1; i++) {
+        if (legs[i].layoverAfter && !legs[i].nextDep && legs[i + 1]) {
+          legs[i].nextDep = legs[i + 1].dep;
+        }
+      }
+
+      let legsHtml = '';
+      legs.forEach(lg => {
+        legsHtml += `
+          <div class="tool-flight-leg">
+            <div class="tool-flight-dep">
+              <span class="dep-time">${lg.dep || '--:--'}</span>
+              <span class="dep-label">起飞</span>
+            </div>
+            <div class="tool-flight-main">
+              <div class="tool-flight-ports">
+                <span class="port-codes">
+                  <b>${esc(lg.fromCode || lg.from)}</b>${lg.fromTerminal ? `<i class="term">${esc(lg.fromTerminal)}</i>` : ''}
+                  <span class="arrow">→</span>
+                  <b>${esc(lg.toCode || lg.to)}</b>${lg.toTerminal ? `<i class="term">${esc(lg.toTerminal)}</i>` : ''}
+                </span>
+                <span class="arr-pill">到达 <b>${lg.arr || '--:--'}</b></span>
+              </div>
+              <div class="tool-flight-cities">
+                <span>${esc(lg.from)}${lg.fromAirport ? ` <small>(${esc(lg.fromAirport)})</small>` : ''}</span>
+                <span class="sep">→</span>
+                <span>${esc(lg.to)}${lg.toAirport ? ` <small>(${esc(lg.toAirport)})</small>` : ''}</span>
+              </div>
+              <div class="tool-flight-no">
+                ✈️ ${esc(lg.airline || '')} <b>${esc(lg.flightNo || lg.flightNoNote || '')}</b>
+              </div>
+              ${lg.timezoneNote ? `<div class="tool-flight-tz">🕐 ${esc(lg.timezoneNote)}</div>` : ''}
+            </div>
+          </div>
+        `;
+
+        if (lg.layoverAfter) {
+          legsHtml += formatLayoverBlock(lg.layoverAfter, lg.nextDep);
+        }
+      });
+
+      // 提取当天所有机票与订单
+      const allTickets = [];
+      const seenTickets = new Set();
+      let orderNo = '';
+      let orderLabel = '';
+      grp.flights.forEach(f => {
+        if (f.orderNo) { orderNo = f.orderNo; orderLabel = f.orderLabel || ''; }
+        if (f.tickets) {
+          f.tickets.forEach(t => {
+            const key = `${t.name}-${t.ticketNo}-${t.bookRef}`;
+            if (!seenTickets.has(key)) {
+              seenTickets.add(key);
+              allTickets.push(t);
+            }
+          });
+        }
+      });
+
+      const ticketsBox = renderTicketBox(allTickets, orderNo, orderLabel);
+
+      return `
+        <div class="card tool-flight-group">
+          <div class="tool-group-header">
+            <span class="tool-group-date">${fmtDate(grp.date)}</span>
+            <span class="tool-group-tag">${esc(dayTag)}</span>
+          </div>
+          <div class="tool-group-legs">
+            ${legsHtml}
+          </div>
+          ${ticketsBox}
+        </div>
+      `;
+    }).join('');
+
+    el.innerHTML = html;
+
+    // 绑定票务折叠展开事件
+    el.querySelectorAll('.btn-ticket-toggle').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const drawer = btn.nextElementSibling;
+        if (!drawer) return;
+        const isExpanded = !drawer.hidden;
+        drawer.hidden = isExpanded;
+        btn.setAttribute('aria-expanded', String(!isExpanded));
+        const icon = btn.querySelector('.toggle-icon');
+        const text = btn.querySelector('.toggle-text');
+        if (icon) icon.textContent = !isExpanded ? '⌃' : '⌄';
+        if (text) text.textContent = !isExpanded ? '收起票务信息' : '查看票务信息';
+      });
+    });
   }
 
   function setupConverter(rate) {
