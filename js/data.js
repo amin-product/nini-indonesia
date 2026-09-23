@@ -570,23 +570,7 @@ window.TRIP_DATA = {
           "rowRef": "最终版!A11"
         }
       ],
-      "untimed": [
-        {
-          "time": "",
-          "endTime": "",
-          "type": "leisure",
-          "title": "巴厘岛交通费用（包车/打车）",
-          "detail": "4趟接送+佩妮达岛私人一日游",
-          "note": "",
-          "costNote": "含4趟机场酒店接送+佩妮达岛私人团1日游",
-          "guideId": null,
-          "flightIndex": null,
-          "transportIndex": null,
-          "hotelId": null,
-          "images": [],
-          "rowRef": "最终版!A12"
-        }
-      ],
+      "untimed": [],
       "flights": [
         {
           "date": "2026-09-27",
