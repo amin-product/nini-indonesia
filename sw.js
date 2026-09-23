@@ -7,7 +7,7 @@
   4. 外部 API 请求（汇率等）：透传放行，不污染静态缓存
 */
 
-const CACHE_NAME = 'chidaoxiaoni-v1.3';
+const CACHE_NAME = 'chidaoxiaoni-v1.4';
 
 // A. 核心启动资源（必须成功，任一失败则中断 install，避免生成残缺离线应用）
 const CORE_PRECACHE_URLS = [
