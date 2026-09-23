@@ -1178,7 +1178,7 @@
       return `<div class="card"><div class="card-title">🆘 紧急求助</div>${renderEmergency()}</div>`;
     }
     if (screen === 'hotels') {
-      return `<div class="card" id="tool-hotel-list"></div>`;
+      return `<div id="tool-hotel-list" class="tool-hotel-list"></div>`;
     }
     if (screen === 'flights') {
       return `<div id="tool-flight-list" class="tool-flight-groups"></div>`;
@@ -1337,33 +1337,208 @@
     return null;
   }
 
+  const HOTEL_STAYS = [
+    {
+      id: 'h01',
+      dateRange: '9/24',
+      region: 'Bromo',
+      name: 'Arum Bromo Villas',
+      address: 'Jl. Raya Bromo, Dusun II Jombok rt. 08/03, Dusun 2, Sapikerep, Kec. Sukapura, Kabupaten Probolinggo, Jawa Timur 67254印度尼西亚',
+      phone: { display: '+62 812-3296-6800', tel: '+6281232966800' },
+      breakfast: '应该不含早餐',
+      checkIn: '15:00后',
+      checkOut: '11:00前',
+    },
+    {
+      id: 'h02',
+      dateRange: '9/25',
+      region: '赛武',
+      name: 'AJA Homestay',
+      address: 'Jl. Krajan RT.02 RW.09 Sidomulyo Pronojiwo Lumajang, 67374 Pronojiwo, 印尼',
+      phone: { display: '+62 853-8556-5541', tel: '+6285385565541' },
+      orderNo: '5305422686',
+      confirmCode: '7337',
+      breakfast: '含早餐',
+      checkIn: '14:00',
+      checkOut: '12:00',
+    },
+    {
+      id: 'h03',
+      dateRange: '9/26、10/3',
+      region: '泗水',
+      name: 'Premier Place Surabaya Airport',
+      address: 'Jl. Raya Bandara Juanda No.73, Semawalang, Semambung, 格当岸, 诗都阿佐县',
+      phone: { display: '+62 31-8685555', tel: '+62318685555' },
+      confirmNo: '1128150262312357',
+      confirmNote: '用护照即可入住',
+      breakfast: '含早餐',
+      checkIn: '14:00',
+      checkOut: '12:00',
+    },
+    {
+      id: 'h04',
+      dateRange: '9/27–9/28',
+      region: '沙努尔',
+      name: '埃洛拉别墅',
+      address: 'Jl Danau Tamblingan 60, Bali, 80361 沙努尔, 印尼',
+      phone: { display: '+62 361-285204', tel: '+62361285204' },
+      orderNo: '6367448475',
+      confirmCode: '9565',
+      breakfast: '含早餐',
+      checkIn: '15:00',
+      checkOut: '11:00',
+    },
+    {
+      id: 'h05',
+      dateRange: '9/29–9/30',
+      region: '科莫多',
+      name: 'Luciana Hotel',
+      address: 'Gang Lewur, 86754 纳闽巴霍, 印尼',
+      phone: { display: '+62 853-3788-5406', tel: '+6285337885406' },
+      orderNo: '6243268137',
+      confirmCode: '8295',
+      breakfast: '好像不含早餐',
+      checkIn: '14:00',
+      checkOut: '10:00',
+    },
+    {
+      id: 'h06',
+      dateRange: '10/1–10/2',
+      region: '乌布',
+      name: 'Kanhara Villas Ubud by GenuineHost',
+      address: 'Jalan Raya Kumbuh, Mas, Ubud, 80571 乌布, 印尼',
+      phone: { display: '+62 813-2094-8556', tel: '+6281320948556' },
+      orderNo: '5716886009',
+      confirmCode: '7392',
+      breakfast: '含早餐',
+      checkIn: '14:00',
+      checkOut: '12:00',
+    },
+  ];
+
+  function getHotelStays() {
+    return HOTEL_STAYS.map(base => {
+      const live = hotels.find(x => x.id === base.id);
+      if (!live) return base;
+      return {
+        ...base,
+        name: live.name || base.name,
+        address: live.address || base.address,
+        orderNo: live.orderNo != null ? String(live.orderNo) : base.orderNo,
+        confirmCode: live.confirmCode != null ? String(live.confirmCode) : base.confirmCode,
+        confirmNo: live.confirmNo != null ? String(live.confirmNo) : base.confirmNo,
+        confirmNote: live.confirmNote != null ? String(live.confirmNote) : base.confirmNote,
+        breakfast: live.breakfast != null ? live.breakfast : base.breakfast,
+        checkIn: live.checkIn != null ? live.checkIn : base.checkIn,
+        checkOut: live.checkOut != null ? live.checkOut : base.checkOut,
+        phone: (live.phone && live.tel) ? { display: live.phone, tel: live.tel } : base.phone,
+      };
+    });
+  }
+
   function renderToolHotels() {
     const el = document.getElementById('tool-hotel-list');
     if (!el) return;
-    // 按日期列酒店：每天显示当晚酒店
-    const html = days.map(d => {
-      if (!d.hotel) return '';
-      const h = d.hotel;
-      const region = getHotelRegion(h, d);
-      const regionPart = region ? ` · <span class="tool-hotel-region">${esc(region)}</span>` : '';
-      const phone = getHotelPhone(h);
+
+    const list = getHotelStays();
+    const html = list.map(h => {
+      const phone = h.phone;
       const phoneHtml = phone ? `
         <div class="tool-hotel-phone">
           <span class="phone-icon" aria-hidden="true">☎️</span>
           <a class="phone-link" href="tel:${esc(phone.tel)}">${esc(phone.display)}</a>
         </div>
       ` : '';
-      return `<div class="tool-hotel-row">
-        <div class="tool-hotel-date">${esc(d.label)} · ${esc(d.weekday)}${regionPart}</div>
-        <div class="tool-hotel-name">${esc(h.name)}</div>
-        <div class="tool-hotel-addr">${esc(h.address)}</div>
-        ${phoneHtml}
-        <div class="hotel-actions" style="margin-top:8px">
-          <button class="btn" data-copy="${esc(h.address)}">📋 复制地址</button>
-          <a class="btn btn-map" href="${mapsSearchUrl(h.name, h.address)}" target="_blank" rel="noopener noreferrer">🗺️ 地图</a>
+
+      // 凭证区域（订单号 / 入住确认码 / 确认号）
+      const vouchers = [];
+      if (h.orderNo) {
+        vouchers.push(`
+          <div class="hotel-voucher-item" data-copy="${esc(h.orderNo)}" data-copy-toast="订单号已复制" role="button" tabindex="0" title="点击复制订单号">
+            <div class="voucher-info">
+              <span class="voucher-label">订单号</span>
+              <span class="voucher-val">${esc(h.orderNo)}</span>
+            </div>
+            <span class="voucher-copy-icon" aria-hidden="true">📋</span>
+          </div>
+        `);
+      }
+      if (h.confirmCode) {
+        vouchers.push(`
+          <div class="hotel-voucher-item" data-copy="${esc(h.confirmCode)}" data-copy-toast="确认码已复制" role="button" tabindex="0" title="点击复制入住确认码">
+            <div class="voucher-info">
+              <span class="voucher-label">入住确认码</span>
+              <span class="voucher-val">${esc(h.confirmCode)}</span>
+            </div>
+            <span class="voucher-copy-icon" aria-hidden="true">📋</span>
+          </div>
+        `);
+      }
+      if (h.confirmNo) {
+        vouchers.push(`
+          <div class="hotel-voucher-item" data-copy="${esc(h.confirmNo)}" data-copy-toast="确认号已复制" role="button" tabindex="0" title="点击复制确认号">
+            <div class="voucher-info">
+              <span class="voucher-label">确认号</span>
+              <span class="voucher-val">${esc(h.confirmNo)}</span>
+              ${h.confirmNote ? `<span class="voucher-hint">${esc(h.confirmNote)}</span>` : ''}
+            </div>
+            <span class="voucher-copy-icon" aria-hidden="true">📋</span>
+          </div>
+        `);
+      }
+      const voucherHtml = vouchers.length
+        ? `<div class="hotel-voucher-list">${vouchers.join('')}</div>`
+        : '';
+
+      // 紧凑横向 meta 信息（早餐 / 入住时间 / 退房时间）
+      const metaItems = [];
+      if (h.breakfast) {
+        metaItems.push(`
+          <div class="hotel-meta-item">
+            <span class="meta-label">早餐</span>
+            <span class="meta-val">${esc(h.breakfast)}</span>
+          </div>
+        `);
+      }
+      if (h.checkIn) {
+        metaItems.push(`
+          <div class="hotel-meta-item">
+            <span class="meta-label">入住</span>
+            <span class="meta-val">${esc(h.checkIn)}</span>
+          </div>
+        `);
+      }
+      if (h.checkOut) {
+        metaItems.push(`
+          <div class="hotel-meta-item">
+            <span class="meta-label">退房</span>
+            <span class="meta-val">${esc(h.checkOut)}</span>
+          </div>
+        `);
+      }
+      const metaHtml = metaItems.length
+        ? `<div class="hotel-meta-row">${metaItems.join('')}</div>`
+        : '';
+
+      const checkinSection = (voucherHtml || metaHtml)
+        ? `<div class="tool-hotel-checkin">${voucherHtml}${metaHtml}</div>`
+        : '';
+
+      return `
+        <div class="card tool-hotel-card">
+          <div class="tool-hotel-date">${esc(h.dateRange)} · <span class="tool-hotel-region">${esc(h.region)}</span></div>
+          <div class="tool-hotel-name">${esc(h.name)}</div>
+          <div class="tool-hotel-addr">${esc(h.address)}</div>
+          ${phoneHtml}
+          ${checkinSection}
+          <div class="hotel-actions" style="margin-top:12px">
+            <button class="btn" data-copy="${esc(h.address)}" data-copy-toast="地址已复制">📋 复制地址</button>
+            <a class="btn btn-map" href="${mapsSearchUrl(h.name, h.address)}" target="_blank" rel="noopener noreferrer">🗺️ 地图</a>
+          </div>
         </div>
-      </div>`;
+      `;
     }).join('');
+
     el.innerHTML = html;
   }
 
@@ -1642,7 +1817,14 @@
       const btn = e.target.closest('[data-copy]');
       if (!btn) return;
       const ok = await copyText(btn.dataset.copy || '');
-      showToast(ok ? '地址已复制' : '复制失败，请手动复制');
+      const toastText = btn.dataset.copyToast || '已复制';
+      showToast(ok ? toastText : '复制失败，请手动复制');
+    });
+    document.addEventListener('keydown', e => {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('[data-copy][role="button"]')) {
+        e.preventDefault();
+        e.target.closest('[data-copy][role="button"]').click();
+      }
     });
   }
 

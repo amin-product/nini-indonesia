@@ -544,7 +544,7 @@ window.TRIP_DATA = {
           "time": "14:30",
           "endTime": "",
           "type": "hotel",
-          "title": "入住 埃格拉别墅",
+          "title": "入住 埃洛拉别墅",
           "detail": "包车",
           "note": "",
           "guideId": null,
@@ -660,7 +660,7 @@ window.TRIP_DATA = {
       ],
       "hotel": {
         "id": "h04",
-        "name": "埃格拉别墅",
+        "name": "埃洛拉别墅",
         "nameEn": "",
         "address": "Jl Danau Tamblingan 60, Bali, 80361 沙努尔, 印尼",
         "addressLines": [
@@ -738,7 +738,7 @@ window.TRIP_DATA = {
       "transports": [],
       "hotel": {
         "id": "h04",
-        "name": "埃格拉别墅",
+        "name": "埃洛拉别墅",
         "nameEn": "",
         "address": "Jl Danau Tamblingan 60, Bali, 80361 沙努尔, 印尼",
         "addressLines": [
@@ -1558,6 +1558,8 @@ window.TRIP_DATA = {
   "hotels": [
     {
       "id": "h01",
+      "dates": "9/24",
+      "region": "Bromo",
       "name": "Arum Bromo Villas",
       "nameEn": "Arum Bromo Villas",
       "address": "Jl. Raya Bromo, Dusun II Jombok rt. 08/03, Dusun 2, Sapikerep, Kec. Sukapura, Kabupaten Probolinggo, Jawa Timur 67254印度尼西亚",
@@ -1571,12 +1573,17 @@ window.TRIP_DATA = {
       "area": "bromo",
       "phone": "+62 812-3296-6800",
       "tel": "+6281232966800",
+      "breakfast": "应该不含早餐",
+      "checkIn": "15:00后",
+      "checkOut": "11:00前",
       "images": [
         "assets/hotel/h01.jpg"
       ]
     },
     {
       "id": "h02",
+      "dates": "9/25",
+      "region": "赛武",
       "name": "AJA Homestay",
       "nameEn": "AJA Homestay",
       "address": "Jl. Krajan RT.02 RW.09 Sidomulyo Pronojiwo Lumajang, 67374 Pronojiwo, 印尼",
@@ -1588,8 +1595,13 @@ window.TRIP_DATA = {
       ],
       "stayNote": "回酒店再坐车，包车1",
       "area": "赛武",
+      "orderNo": "5305422686",
+      "confirmCode": "7337",
       "phone": "+62 853-8556-5541",
       "tel": "+6285385565541",
+      "breakfast": "含早餐",
+      "checkIn": "14:00",
+      "checkOut": "12:00",
       "images": [
         "assets/hotel/h02.jpg",
         "assets/hotel/h03.jpg"
@@ -1597,6 +1609,8 @@ window.TRIP_DATA = {
     },
     {
       "id": "h03",
+      "dates": "9/26、10/3",
+      "region": "泗水",
       "name": "Premier Place Surabaya Airport",
       "nameEn": "Premier Place Surabaya Airport",
       "address": "Jl. Raya Bandara Juanda No.73, Semawalang, Semambung, 格当岸, 诗都阿佐县",
@@ -1608,15 +1622,22 @@ window.TRIP_DATA = {
       ],
       "stayNote": "回酒店再坐车，包车1",
       "area": "泗水",
+      "confirmNo": "1128150262312357",
+      "confirmNote": "用护照即可入住",
       "phone": "+62 31-8685555",
       "tel": "+62318685555",
+      "breakfast": "含早餐",
+      "checkIn": "14:00",
+      "checkOut": "12:00",
       "images": [
         "assets/hotel/h04.jpg"
       ]
     },
     {
       "id": "h04",
-      "name": "埃格拉别墅",
+      "dates": "9/27–9/28",
+      "region": "沙努尔",
+      "name": "埃洛拉别墅",
       "nameEn": "",
       "address": "Jl Danau Tamblingan 60, Bali, 80361 沙努尔, 印尼",
       "addressLines": [
@@ -1627,8 +1648,13 @@ window.TRIP_DATA = {
       ],
       "stayNote": "包车",
       "area": "巴厘岛",
+      "orderNo": "6367448475",
+      "confirmCode": "9565",
       "phone": "+62 361-285204",
       "tel": "+62361285204",
+      "breakfast": "含早餐",
+      "checkIn": "15:00",
+      "checkOut": "11:00",
       "images": [
         "assets/hotel/h05.jpg",
         "assets/hotel/h06.jpg"
@@ -1636,6 +1662,8 @@ window.TRIP_DATA = {
     },
     {
       "id": "h05",
+      "dates": "9/29–9/30",
+      "region": "科莫多",
       "name": "Luciana Hotel",
       "nameEn": "Luciana Hotel",
       "address": "Gang Lewur, 86754 纳闽巴霍, 印尼",
@@ -1647,8 +1675,13 @@ window.TRIP_DATA = {
       ],
       "stayNote": "",
       "area": "科莫多岛",
+      "orderNo": "6243268137",
+      "confirmCode": "8295",
       "phone": "+62 853-3788-5406",
       "tel": "+6285337885406",
+      "breakfast": "好像不含早餐",
+      "checkIn": "14:00",
+      "checkOut": "10:00",
       "images": [
         "assets/hotel/h07.jpg",
         "assets/hotel/h08.jpg"
@@ -1656,6 +1689,8 @@ window.TRIP_DATA = {
     },
     {
       "id": "h06",
+      "dates": "10/1–10/2",
+      "region": "乌布",
       "name": "Kanhara Villas Ubud by GenuineHost",
       "nameEn": "Kanhara Villas Ubud by GenuineHost",
       "address": "Jalan Raya Kumbuh, Mas, Ubud, 80571 乌布, 印尼",
@@ -1668,8 +1703,13 @@ window.TRIP_DATA = {
       ],
       "stayNote": "",
       "area": "巴厘岛",
+      "orderNo": "5716886009",
+      "confirmCode": "7392",
       "phone": "+62 813-2094-8556",
       "tel": "+6281320948556",
+      "breakfast": "含早餐",
+      "checkIn": "14:00",
+      "checkOut": "12:00",
       "images": [
         "assets/hotel/h09.jpg",
         "assets/hotel/h10.jpg",
