@@ -347,7 +347,7 @@ window.TRIP_DATA = {
           "Jl. Krajan RT.02 RW.09 Sidomulyo Pronojiwo Lumajang, 67374 Pronojiwo, 印尼"
         ],
         "notes": [
-          "房间50平，含早餐，离赛武瀑布步行半小时的距离"
+          "房间50平，离赛武瀑布步行半小时的距离"
         ],
         "stayNote": "回酒店再坐车，包车1",
         "area": "赛武",
@@ -461,9 +461,7 @@ window.TRIP_DATA = {
         "addressLines": [
           "Jl. Raya Bandara Juanda No.73, Semawalang, Semambung, 格当岸, 诗都阿佐县"
         ],
-        "notes": [
-          "含早"
-        ],
+        "notes": [],
         "stayNote": "回酒店再坐车，包车1",
         "area": "泗水",
         "images": [],
@@ -667,7 +665,7 @@ window.TRIP_DATA = {
           "Jl Danau Tamblingan 60, Bali, 80361 沙努尔, 印尼"
         ],
         "notes": [
-          "130平，含早，距离港口和商业圈近"
+          "130平，距离港口和商业圈近"
         ],
         "stayNote": "包车",
         "area": "巴厘岛",
@@ -745,7 +743,7 @@ window.TRIP_DATA = {
           "Jl Danau Tamblingan 60, Bali, 80361 沙努尔, 印尼"
         ],
         "notes": [
-          "130平，含早，距离港口和商业圈近"
+          "130平，距离港口和商业圈近"
         ],
         "stayNote": "包车",
         "area": "巴厘岛",
@@ -1374,9 +1372,7 @@ window.TRIP_DATA = {
         "addressLines": [
           "Jl. Raya Bandara Juanda No.73, Semawalang, Semambung, 格当岸, 诗都阿佐县"
         ],
-        "notes": [
-          "含早"
-        ],
+        "notes": [],
         "stayNote": "回酒店再坐车，包车1",
         "area": "泗水",
         "images": [],
@@ -1591,7 +1587,7 @@ window.TRIP_DATA = {
         "Jl. Krajan RT.02 RW.09 Sidomulyo Pronojiwo Lumajang, 67374 Pronojiwo, 印尼"
       ],
       "notes": [
-        "房间50平，含早餐，离赛武瀑布步行半小时的距离"
+        "房间50平，离赛武瀑布步行半小时的距离"
       ],
       "stayNote": "回酒店再坐车，包车1",
       "area": "赛武",
@@ -1617,9 +1613,7 @@ window.TRIP_DATA = {
       "addressLines": [
         "Jl. Raya Bandara Juanda No.73, Semawalang, Semambung, 格当岸, 诗都阿佐县"
       ],
-      "notes": [
-        "含早"
-      ],
+      "notes": [],
       "stayNote": "回酒店再坐车，包车1",
       "area": "泗水",
       "confirmNo": "1128150262312357",
@@ -1644,7 +1638,7 @@ window.TRIP_DATA = {
         "Jl Danau Tamblingan 60, Bali, 80361 沙努尔, 印尼"
       ],
       "notes": [
-        "130平，含早，距离港口和商业圈近"
+        "130平，距离港口和商业圈近"
       ],
       "stayNote": "包车",
       "area": "巴厘岛",

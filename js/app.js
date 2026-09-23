@@ -679,6 +679,149 @@
             <div class="day-ref-strip">${imgs}</div></div>`;
   }
 
+  const HOTEL_PHONES = {
+    h01: { display: '+62 812-3296-6800', tel: '+6281232966800' },
+    h02: { display: '+62 853-8556-5541', tel: '+6285385565541' },
+    h03: { display: '+62 31-8685555',    tel: '+62318685555' },
+    h04: { display: '+62 361-285204',    tel: '+62361285204' },
+    h05: { display: '+62 853-3788-5406', tel: '+6285337885406' },
+    h06: { display: '+62 813-2094-8556', tel: '+6281320948556' },
+  };
+
+  function getHotelBase(id) {
+    if (!id) return null;
+    const base = hotels.find(x => x.id === id);
+    if (!base) return null;
+    let phoneObj = null;
+    if (base.phone && base.tel) {
+      phoneObj = { display: String(base.phone), tel: String(base.tel) };
+    } else if (HOTEL_PHONES[id]) {
+      phoneObj = HOTEL_PHONES[id];
+    }
+    return {
+      id: base.id,
+      name: base.name || '',
+      nameEn: base.nameEn || '',
+      address: base.address || '',
+      phone: phoneObj,
+      orderNo: base.orderNo != null ? String(base.orderNo) : '',
+      confirmCode: base.confirmCode != null ? String(base.confirmCode) : '',
+      confirmNo: base.confirmNo != null ? String(base.confirmNo) : '',
+      confirmNote: base.confirmNote != null ? String(base.confirmNote) : '',
+      breakfast: base.breakfast != null ? String(base.breakfast) : '',
+      checkIn: base.checkIn != null ? String(base.checkIn) : '',
+      checkOut: base.checkOut != null ? String(base.checkOut) : '',
+      notes: Array.isArray(base.notes) ? base.notes : [],
+      images: Array.isArray(base.images) ? base.images : [],
+    };
+  }
+
+  function getHotelPhone(h) {
+    if (!h) return null;
+    if (h.phone && h.tel) return { display: String(h.phone), tel: String(h.tel) };
+    const base = getHotelBase(h.id);
+    if (base && base.phone) return base.phone;
+    if (HOTEL_PHONES[h.id]) return HOTEL_PHONES[h.id];
+    return null;
+  }
+
+  function cleanHotelNotes(notes) {
+    if (!Array.isArray(notes)) return [];
+    return notes
+      .map(n => String(n || '')
+        .replace(/，?含早(?:餐)?，?/g, (match) => {
+          if (match.startsWith('，') && match.endsWith('，')) return '，';
+          return '';
+        })
+        .replace(/^，|，$/g, '')
+        .trim())
+      .filter(n => n.length > 0 && n !== '含早' && n !== '含早餐');
+  }
+
+  function renderHotelPhoneHtml(phone) {
+    if (!phone || !phone.display) return '';
+    return `
+      <div class="tool-hotel-phone">
+        <span class="phone-icon" aria-hidden="true">☎️</span>
+        <a class="phone-link" href="tel:${esc(phone.tel || phone.display)}">${esc(phone.display)}</a>
+      </div>
+    `;
+  }
+
+  function renderHotelCheckinSection(hotel) {
+    if (!hotel) return '';
+    const vouchers = [];
+    if (hotel.orderNo) {
+      vouchers.push(`
+        <div class="hotel-voucher-item" data-copy="${esc(hotel.orderNo)}" data-copy-toast="订单号已复制" role="button" tabindex="0" title="点击复制订单号">
+          <div class="voucher-info">
+            <span class="voucher-label">订单号</span>
+            <span class="voucher-val">${esc(hotel.orderNo)}</span>
+          </div>
+          <span class="voucher-copy-icon" aria-hidden="true">📋</span>
+        </div>
+      `);
+    }
+    if (hotel.confirmCode) {
+      vouchers.push(`
+        <div class="hotel-voucher-item" data-copy="${esc(hotel.confirmCode)}" data-copy-toast="确认码已复制" role="button" tabindex="0" title="点击复制入住确认码">
+          <div class="voucher-info">
+            <span class="voucher-label">入住确认码</span>
+            <span class="voucher-val">${esc(hotel.confirmCode)}</span>
+          </div>
+          <span class="voucher-copy-icon" aria-hidden="true">📋</span>
+        </div>
+      `);
+    }
+    if (hotel.confirmNo) {
+      vouchers.push(`
+        <div class="hotel-voucher-item" data-copy="${esc(hotel.confirmNo)}" data-copy-toast="确认号已复制" role="button" tabindex="0" title="点击复制确认号">
+          <div class="voucher-info">
+            <span class="voucher-label">确认号</span>
+            <span class="voucher-val">${esc(hotel.confirmNo)}</span>
+            ${hotel.confirmNote ? `<span class="voucher-hint">${esc(hotel.confirmNote)}</span>` : ''}
+          </div>
+          <span class="voucher-copy-icon" aria-hidden="true">📋</span>
+        </div>
+      `);
+    }
+    const voucherHtml = vouchers.length
+      ? `<div class="hotel-voucher-list">${vouchers.join('')}</div>`
+      : '';
+
+    const metaItems = [];
+    if (hotel.breakfast) {
+      metaItems.push(`
+        <div class="hotel-meta-item">
+          <span class="meta-label">早餐</span>
+          <span class="meta-val">${esc(hotel.breakfast)}</span>
+        </div>
+      `);
+    }
+    if (hotel.checkIn) {
+      metaItems.push(`
+        <div class="hotel-meta-item">
+          <span class="meta-label">入住</span>
+          <span class="meta-val">${esc(hotel.checkIn)}</span>
+        </div>
+      `);
+    }
+    if (hotel.checkOut) {
+      metaItems.push(`
+        <div class="hotel-meta-item">
+          <span class="meta-label">退房</span>
+          <span class="meta-val">${esc(hotel.checkOut)}</span>
+        </div>
+      `);
+    }
+    const metaHtml = metaItems.length
+      ? `<div class="hotel-meta-row">${metaItems.join('')}</div>`
+      : '';
+
+    if (!voucherHtml && !metaHtml) return '';
+    return `<div class="tool-hotel-checkin">${voucherHtml}${metaHtml}</div>`;
+  }
+
   function hasDistinctEn(name, nameEn) {
     if (!nameEn) return false;
     const n = String(name || '').trim().toLowerCase();
@@ -691,20 +834,38 @@
       return `<div class="card"><div class="section-title">🏨 住宿</div><p class="card-sub">今日返程，无住宿安排。</p></div>`;
     }
     const h = day.hotel;
-    const addr = esc(h.address);
+    const base = getHotelBase(h.id) || {};
+    const name = base.name || h.name || '';
+    const nameEn = base.nameEn || h.nameEn || '';
+    const addr = base.address || h.address || '';
+    const phone = base.phone || getHotelPhone(h);
+    const dayNotes = cleanHotelNotes(h.notes && h.notes.length ? h.notes : (base.notes || []));
+    const phoneHtml = renderHotelPhoneHtml(phone);
+    const checkinSection = renderHotelCheckinSection(base);
+
+    const notesHtml = dayNotes.length
+      ? `<div class="hotel-notes">${dayNotes.map(n => `<div>• ${esc(n)}</div>`).join('')}</div>`
+      : '';
+
+    const imagesHtml = (h.images && h.images.length)
+      ? `<div class="hotel-screens">${h.images.map(src => `<img src="${esc(src)}" alt="酒店参考图" loading="lazy">`).join('')}</div>`
+      : '';
+
     return `<div class="card hotel-card">
       <div class="hotel-name-wrap">
-        <h3 class="hotel-name">${esc(h.name)}</h3>
-        ${hasDistinctEn(h.name, h.nameEn) ? `<span class="hotel-name-en">${esc(h.nameEn)}</span>` : ''}
+        <h3 class="hotel-name">${esc(name)}</h3>
+        ${hasDistinctEn(name, nameEn) ? `<span class="hotel-name-en">${esc(nameEn)}</span>` : ''}
         ${h.inherited ? `<span class="hotel-inherited">沿用前一晚</span>` : ''}
       </div>
-      <p class="hotel-address">${addr}</p>
-      ${h.notes.length ? `<div class="hotel-notes">${h.notes.map(n => `<div>• ${esc(n)}</div>`).join('')}</div>` : ''}
+      <p class="hotel-address">${esc(addr)}</p>
+      ${phoneHtml}
+      ${notesHtml}
+      ${checkinSection}
       <div class="hotel-actions">
-        <button class="btn" data-copy="${addr}">📋 复制地址</button>
-        <a class="btn btn-map" href="${mapsSearchUrl(h.name, h.address)}" target="_blank" rel="noopener noreferrer">🗺️ 地图</a>
+        <button class="btn" data-copy="${esc(addr)}" data-copy-toast="地址已复制">📋 复制地址</button>
+        <a class="btn btn-map" href="${mapsSearchUrl(name, addr)}" target="_blank" rel="noopener noreferrer">🗺️ 地图</a>
       </div>
-      ${h.images.length ? `<div class="hotel-screens">${h.images.map(src => `<img src="${esc(src)}" alt="酒店参考图" loading="lazy">`).join('')}</div>` : ''}
+      ${imagesHtml}
     </div>`;
   }
 
@@ -1318,120 +1479,21 @@
     return '';
   }
 
-  const HOTEL_PHONES = {
-    h01: { display: '+62 812-3296-6800', tel: '+6281232966800' },
-    h02: { display: '+62 853-8556-5541', tel: '+6285385565541' },
-    h03: { display: '+62 31-8685555',    tel: '+62318685555' },
-    h04: { display: '+62 361-285204',    tel: '+62361285204' },
-    h05: { display: '+62 853-3788-5406', tel: '+6285337885406' },
-    h06: { display: '+62 813-2094-8556', tel: '+6281320948556' },
-  };
-
-  function getHotelPhone(h) {
-    if (!h) return null;
-    if (h.phone && h.tel) return { display: h.phone, tel: h.tel };
-    const p = HOTEL_PHONES[h.id];
-    if (p) return p;
-    const found = hotels.find(x => x.id === h.id);
-    if (found && found.phone && found.tel) return { display: found.phone, tel: found.tel };
-    return null;
-  }
-
   const HOTEL_STAYS = [
-    {
-      id: 'h01',
-      dateRange: '9/24',
-      region: 'Bromo',
-      name: 'Arum Bromo Villas',
-      address: 'Jl. Raya Bromo, Dusun II Jombok rt. 08/03, Dusun 2, Sapikerep, Kec. Sukapura, Kabupaten Probolinggo, Jawa Timur 67254印度尼西亚',
-      phone: { display: '+62 812-3296-6800', tel: '+6281232966800' },
-      breakfast: '应该不含早餐',
-      checkIn: '15:00后',
-      checkOut: '11:00前',
-    },
-    {
-      id: 'h02',
-      dateRange: '9/25',
-      region: '赛武',
-      name: 'AJA Homestay',
-      address: 'Jl. Krajan RT.02 RW.09 Sidomulyo Pronojiwo Lumajang, 67374 Pronojiwo, 印尼',
-      phone: { display: '+62 853-8556-5541', tel: '+6285385565541' },
-      orderNo: '5305422686',
-      confirmCode: '7337',
-      breakfast: '含早餐',
-      checkIn: '14:00',
-      checkOut: '12:00',
-    },
-    {
-      id: 'h03',
-      dateRange: '9/26、10/3',
-      region: '泗水',
-      name: 'Premier Place Surabaya Airport',
-      address: 'Jl. Raya Bandara Juanda No.73, Semawalang, Semambung, 格当岸, 诗都阿佐县',
-      phone: { display: '+62 31-8685555', tel: '+62318685555' },
-      confirmNo: '1128150262312357',
-      confirmNote: '用护照即可入住',
-      breakfast: '含早餐',
-      checkIn: '14:00',
-      checkOut: '12:00',
-    },
-    {
-      id: 'h04',
-      dateRange: '9/27–9/28',
-      region: '沙努尔',
-      name: '埃洛拉别墅',
-      address: 'Jl Danau Tamblingan 60, Bali, 80361 沙努尔, 印尼',
-      phone: { display: '+62 361-285204', tel: '+62361285204' },
-      orderNo: '6367448475',
-      confirmCode: '9565',
-      breakfast: '含早餐',
-      checkIn: '15:00',
-      checkOut: '11:00',
-    },
-    {
-      id: 'h05',
-      dateRange: '9/29–9/30',
-      region: '科莫多',
-      name: 'Luciana Hotel',
-      address: 'Gang Lewur, 86754 纳闽巴霍, 印尼',
-      phone: { display: '+62 853-3788-5406', tel: '+6285337885406' },
-      orderNo: '6243268137',
-      confirmCode: '8295',
-      breakfast: '好像不含早餐',
-      checkIn: '14:00',
-      checkOut: '10:00',
-    },
-    {
-      id: 'h06',
-      dateRange: '10/1–10/2',
-      region: '乌布',
-      name: 'Kanhara Villas Ubud by GenuineHost',
-      address: 'Jalan Raya Kumbuh, Mas, Ubud, 80571 乌布, 印尼',
-      phone: { display: '+62 813-2094-8556', tel: '+6281320948556' },
-      orderNo: '5716886009',
-      confirmCode: '7392',
-      breakfast: '含早餐',
-      checkIn: '14:00',
-      checkOut: '12:00',
-    },
+    { id: 'h01', dateRange: '9/24', region: 'Bromo' },
+    { id: 'h02', dateRange: '9/25', region: '赛武' },
+    { id: 'h03', dateRange: '9/26、10/3', region: '泗水' },
+    { id: 'h04', dateRange: '9/27–9/28', region: '沙努尔' },
+    { id: 'h05', dateRange: '9/29–9/30', region: '科莫多' },
+    { id: 'h06', dateRange: '10/1–10/2', region: '乌布' },
   ];
 
   function getHotelStays() {
-    return HOTEL_STAYS.map(base => {
-      const live = hotels.find(x => x.id === base.id);
-      if (!live) return base;
+    return HOTEL_STAYS.map(stay => {
+      const base = getHotelBase(stay.id) || {};
       return {
         ...base,
-        name: live.name || base.name,
-        address: live.address || base.address,
-        orderNo: live.orderNo != null ? String(live.orderNo) : base.orderNo,
-        confirmCode: live.confirmCode != null ? String(live.confirmCode) : base.confirmCode,
-        confirmNo: live.confirmNo != null ? String(live.confirmNo) : base.confirmNo,
-        confirmNote: live.confirmNote != null ? String(live.confirmNote) : base.confirmNote,
-        breakfast: live.breakfast != null ? live.breakfast : base.breakfast,
-        checkIn: live.checkIn != null ? live.checkIn : base.checkIn,
-        checkOut: live.checkOut != null ? live.checkOut : base.checkOut,
-        phone: (live.phone && live.tel) ? { display: live.phone, tel: live.tel } : base.phone,
+        ...stay,
       };
     });
   }
@@ -1442,87 +1504,8 @@
 
     const list = getHotelStays();
     const html = list.map(h => {
-      const phone = h.phone;
-      const phoneHtml = phone ? `
-        <div class="tool-hotel-phone">
-          <span class="phone-icon" aria-hidden="true">☎️</span>
-          <a class="phone-link" href="tel:${esc(phone.tel)}">${esc(phone.display)}</a>
-        </div>
-      ` : '';
-
-      // 凭证区域（订单号 / 入住确认码 / 确认号）
-      const vouchers = [];
-      if (h.orderNo) {
-        vouchers.push(`
-          <div class="hotel-voucher-item" data-copy="${esc(h.orderNo)}" data-copy-toast="订单号已复制" role="button" tabindex="0" title="点击复制订单号">
-            <div class="voucher-info">
-              <span class="voucher-label">订单号</span>
-              <span class="voucher-val">${esc(h.orderNo)}</span>
-            </div>
-            <span class="voucher-copy-icon" aria-hidden="true">📋</span>
-          </div>
-        `);
-      }
-      if (h.confirmCode) {
-        vouchers.push(`
-          <div class="hotel-voucher-item" data-copy="${esc(h.confirmCode)}" data-copy-toast="确认码已复制" role="button" tabindex="0" title="点击复制入住确认码">
-            <div class="voucher-info">
-              <span class="voucher-label">入住确认码</span>
-              <span class="voucher-val">${esc(h.confirmCode)}</span>
-            </div>
-            <span class="voucher-copy-icon" aria-hidden="true">📋</span>
-          </div>
-        `);
-      }
-      if (h.confirmNo) {
-        vouchers.push(`
-          <div class="hotel-voucher-item" data-copy="${esc(h.confirmNo)}" data-copy-toast="确认号已复制" role="button" tabindex="0" title="点击复制确认号">
-            <div class="voucher-info">
-              <span class="voucher-label">确认号</span>
-              <span class="voucher-val">${esc(h.confirmNo)}</span>
-              ${h.confirmNote ? `<span class="voucher-hint">${esc(h.confirmNote)}</span>` : ''}
-            </div>
-            <span class="voucher-copy-icon" aria-hidden="true">📋</span>
-          </div>
-        `);
-      }
-      const voucherHtml = vouchers.length
-        ? `<div class="hotel-voucher-list">${vouchers.join('')}</div>`
-        : '';
-
-      // 紧凑横向 meta 信息（早餐 / 入住时间 / 退房时间）
-      const metaItems = [];
-      if (h.breakfast) {
-        metaItems.push(`
-          <div class="hotel-meta-item">
-            <span class="meta-label">早餐</span>
-            <span class="meta-val">${esc(h.breakfast)}</span>
-          </div>
-        `);
-      }
-      if (h.checkIn) {
-        metaItems.push(`
-          <div class="hotel-meta-item">
-            <span class="meta-label">入住</span>
-            <span class="meta-val">${esc(h.checkIn)}</span>
-          </div>
-        `);
-      }
-      if (h.checkOut) {
-        metaItems.push(`
-          <div class="hotel-meta-item">
-            <span class="meta-label">退房</span>
-            <span class="meta-val">${esc(h.checkOut)}</span>
-          </div>
-        `);
-      }
-      const metaHtml = metaItems.length
-        ? `<div class="hotel-meta-row">${metaItems.join('')}</div>`
-        : '';
-
-      const checkinSection = (voucherHtml || metaHtml)
-        ? `<div class="tool-hotel-checkin">${voucherHtml}${metaHtml}</div>`
-        : '';
+      const phoneHtml = renderHotelPhoneHtml(h.phone);
+      const checkinSection = renderHotelCheckinSection(h);
 
       return `
         <div class="card tool-hotel-card">
